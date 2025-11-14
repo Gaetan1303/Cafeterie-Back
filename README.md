@@ -53,13 +53,15 @@ Cafeterie-Back/
 
 ## Endpoints principaux
 
-### Authentification
+### Authentification ( PUBLIC )
 - `POST /auth/register` : Inscription utilisateur
 - `POST /auth/login` : Connexion utilisateur
 
+> Tous les endpoints suivant sont sécurisés (JWT, rôle admin pour certaines opérations).
+
 ### Utilisateurs
-- `GET /profile/me` : Infos du profil connecté
-- `PUT /profile/me` : Modifier son profil
+- `GET /profile` : Infos du profil connecté
+- `PUT /profile` : Modifier son profil
 
 ### Stock
 - `GET /stock` : Liste paginée du stock
@@ -104,7 +106,6 @@ Cafeterie-Back/
 - `GET /stock-history/dashboard` : Dashboard croisé (admin)
 - `POST /stock-history/operation` : Log opération (nettoyage/préparation)
 
-> Tous les endpoints sont sécurisés (JWT, rôle admin pour certaines opérations).
 
 ---
 
@@ -191,6 +192,90 @@ Cafeterie-Back/
 ```
 
 ---
+
+## DTO
+
+
+### User
+```json
+{
+	"firstName": "string",
+	"lastName": "string",
+	"email": "string",
+	"role": "user | admin",
+	"createdAt": "date"
+}
+```
+
+### StockItem
+```json
+{
+	"type": "string",
+	"subtype": "string",
+	"category": "string",
+	"quantity": "number",
+	"threshold": "number",
+	"lastRestocked": "date"
+}
+```
+
+### Purchase
+```json
+{
+	"user": "ObjectId",
+	"stockItem": "ObjectId",
+	"quantity": "number",
+	"timestamp": "date"
+}
+```
+
+### Event
+```json
+{
+	"title": "string",
+	"description": "string",
+	"date": "date",
+	"type": "string",
+	"participants": ["ObjectId"],
+	"maxParticipants": "number",
+	"alertThreshold": "number",
+	"createdAt": "date"
+}
+```
+
+### Machine
+```json
+{
+	"name": "string",
+	"type": "string",
+	"capacity": "number",
+	"unit": "string",
+	"state": "string",
+	"lastUsed": "date",
+	"lastCleaned": "date",
+	"consumables": [
+		{
+			"name": "string",
+			"stockRef": "ObjectId",
+			"quantity": "number",
+			"unit": "string"
+		}
+	]
+}
+```
+
+### StockHistory
+```json
+{
+	"item": "ObjectId",
+	"action": "entrée | sortie | nettoyage | préparation",
+	"quantity": "number",
+	"date": "date",
+	"user": "ObjectId",
+	"Auteur": "ObjectId",
+	"reason": "string"
+}
+```
 
 ## Enums utilisés dans les modèles
 
