@@ -1,3 +1,7 @@
+// GET /stock/stats : statistiques globales sur le stock
+router.get('/stats', auth, stockController.getStockStats);
+// GET /stock/alerts : items en alerte de stock bas
+router.get('/alerts', auth, stockController.getStockAlerts);
 const express = require('express');
 const router = express.Router();
 const stockController = require('../controllers/stockController');

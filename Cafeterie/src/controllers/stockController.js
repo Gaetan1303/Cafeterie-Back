@@ -1,3 +1,34 @@
+// Statistiques globales sur le stock
+exports.getStockStats = async (req, res) => {
+  try {
+    const stock = await StockItem.find();
+    let totalItems = stock.length;
+    let totalQuantity = stock.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    let totalCups = stock.reduce((sum, item) => sum + (estimateCups(item) || 0), 0);
+    let alerts = stock.filter(item => item.threshold != null && item.quantity <= item.threshold).length;
+    res.json({ totalItems, totalQuantity, totalCups, alerts });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+// Items en alerte de stock bas
+exports.getStockAlerts = async (req, res) => {
+  try {
+    const stock = await StockItem.find();
+    const alerts = stock.filter(item => item.threshold != null && item.quantity <= item.threshold)
+      .map(item => {
+        const cups = estimateCups(item);
+        return {
+          ...item.toObject(),
+          cupsEstimate: cups,
+          alertLowStock: true
+        };
+      });
+    res.json(alerts);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
 // Créer un nouvel item de stock
 exports.createStockItem = async (req, res) => {
   try {

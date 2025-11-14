@@ -1,3 +1,5 @@
+// GET /purchases/recent : derniers achats (tous ou par utilisateur)
+router.get('/recent', auth, purchaseController.getRecentPurchases);
 const express = require('express');
 const router = express.Router();
 const purchaseController = require('../controllers/purchaseController');

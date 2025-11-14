@@ -1,3 +1,20 @@
+// Derniers achats (tous ou par utilisateur)
+exports.getRecentPurchases = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    let filter = {};
+    if (req.user.role !== 'admin') {
+      filter.user = req.user.id;
+    }
+    const purchases = await Purchase.find(filter)
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .populate('user', 'firstName lastName email');
+    res.json(purchases);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
 // Historique global (admin)
 exports.getAllPurchases = async (req, res) => {
   try {
