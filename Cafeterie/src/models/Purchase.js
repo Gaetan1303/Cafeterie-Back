@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
+
+
 const purchaseSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['cafe', 'the', 'nourriture'], required: true },
-  subtype: { type: String },
-  category: { type: String, enum: ['boisson', 'nourriture'], required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  stockItem: { type: mongoose.Schema.Types.ObjectId, ref: 'StockItem', required: true, index: true },
   quantity: { type: Number, required: true },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now, index: true }
 });
 
 module.exports = mongoose.model('Purchase', purchaseSchema);

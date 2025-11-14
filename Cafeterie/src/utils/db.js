@@ -11,7 +11,13 @@ const connectDB = async () => {
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000
+      serverSelectionTimeoutMS: 10000,
+      maxPoolSize: 20, // Limite le pool de connexions à 20 (ajustable selon la charge)
+      minPoolSize: 2,  // Minimum de connexions maintenues
+      socketTimeoutMS: 30000, // Timeout socket
+      retryWrites: true, // Active le retry automatique des écritures
+      w: 'majority', // Sécurité d'écriture
+      autoReconnect: true // (option legacy, gérée par useUnifiedTopology)
     });
     console.log('Connexion à MongoDB réussie');
   } catch (err) {

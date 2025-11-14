@@ -1,11 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+
+const logger = require('./logger');
 
 function logError(error, context = '') {
-  const logPath = path.join(__dirname, '../logs/errors.log');
-  const logMsg = `[${new Date().toISOString()}] ${context}\n${error.stack || error}\n\n`;
-  fs.mkdirSync(path.dirname(logPath), { recursive: true });
-  fs.appendFileSync(logPath, logMsg, 'utf8');
+  logger.error(`${context} ${error.stack || error}`);
 }
 
 module.exports = logError;

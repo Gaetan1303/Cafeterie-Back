@@ -97,7 +97,14 @@ function estimateCups(item) {
 
 exports.getStock = async (req, res) => {
   try {
-    const stock = await StockItem.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    const stock = await StockItem.find()
+      .skip(skip)
+      .limit(limit)
+      .select('type subtype category quantity threshold lastRestocked');
+    const total = await StockItem.countDocuments();
     const stockWithEstimation = stock.map(item => {
       const cups = estimateCups(item);
       const alert = item.threshold != null && item.quantity <= item.threshold;
@@ -107,7 +114,13 @@ exports.getStock = async (req, res) => {
         alertLowStock: alert
       };
     });
-    res.json(stockWithEstimation);
+    res.json({
+      data: stockWithEstimation,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
   }

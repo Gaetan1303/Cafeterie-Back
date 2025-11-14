@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const stockItemSchema = new mongoose.Schema({
   type: { type: String, enum: [
     'cafe',
@@ -10,8 +11,8 @@ const stockItemSchema = new mongoose.Schema({
     'apero',
     'petit-dejeuner',
     'fruit'
-  ], required: true },
-  subtype: { type: String },
+  ], required: true, index: true },
+  subtype: { type: String, index: true },
   category: {
     type: String,
     enum: [
@@ -22,11 +23,14 @@ const stockItemSchema = new mongoose.Schema({
       'Petit déjeuner',
       'Fruits et Légumes'
     ],
-    required: true
+    required: true,
+    index: true
   },
   quantity: { type: Number, required: true },
   threshold: { type: Number, default: 0 },
   lastRestocked: { type: Date, default: Date.now }
 });
+// Unicité sur type+subtype
+stockItemSchema.index({ type: 1, subtype: 1 }, { unique: true });
 
 module.exports = mongoose.model('StockItem', stockItemSchema);
