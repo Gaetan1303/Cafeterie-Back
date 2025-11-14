@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
 
+
 const connectDB = async () => {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.error('MONGODB_URI non défini dans .env');
+    process.exit(1);
+  }
   try {
-    await mongoose.connect(process.env.DB_URI, {
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000
     });
     console.log('Connexion à MongoDB réussie');
   } catch (err) {

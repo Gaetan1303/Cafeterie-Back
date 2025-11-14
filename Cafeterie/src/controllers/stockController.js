@@ -128,7 +128,15 @@ exports.restock = async (req, res) => {
       item.lastRestocked = new Date();
       await item.save();
     }
-    res.json({ message: 'Stock réapprovisionné', item });
+    // Log mouvement de stock (entrée)
+    await StockHistory.create({
+      item: item._id,
+      action: 'entrée',
+      quantity,
+      user: req.user.id,
+      reason: 'Réapprovisionnement'
+    });
+    res.status(200).json({ message: 'Stock réapprovisionné', item });
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
   }

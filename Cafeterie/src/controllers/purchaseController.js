@@ -27,6 +27,7 @@ exports.getAllPurchases = async (req, res) => {
 };
 const Purchase = require('../models/Purchase');
 const StockItem = require('../models/StockItem');
+const StockHistory = require('../models/StockHistory');
 
 // Liste des achats de l'utilisateur connecté
 exports.getMyPurchases = async (req, res) => {
@@ -44,8 +45,8 @@ exports.getMyPurchases = async (req, res) => {
 exports.createPurchase = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { type, subtype, quantity } = req.body;
-    if (!type || !quantity) {
+    const { type, subtype, quantity, category } = req.body;
+    if (!type || !quantity || !category) {
       return res.status(400).json({ error: 'Champs requis manquants' });
     }
     // Décrémenter le stock
@@ -56,7 +57,15 @@ exports.createPurchase = async (req, res) => {
     stockItem.quantity -= quantity;
     await stockItem.save();
     // Enregistrer l'achat
-    const purchase = await Purchase.create({ user: userId, type, subtype, quantity });
+    const purchase = await Purchase.create({ user: userId, type, subtype, category, quantity });
+    // Log mouvement de stock (sortie)
+    await StockHistory.create({
+      item: stockItem._id,
+      action: 'sortie',
+      quantity,
+      user: userId,
+      reason: 'Achat'
+    });
     res.status(201).json({ message: 'Achat enregistré', purchase });
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
