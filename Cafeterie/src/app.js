@@ -16,9 +16,11 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const stockRoutes = require('./routes/stock');
 const purchaseRoutes = require('./routes/purchase');
+const profileRoutes = require('./routes/profile');
 app.use('/auth', authRoutes);
 app.use('/stock', stockRoutes);
 app.use('/purchases', purchaseRoutes);
+app.use('/profile', profileRoutes);
 
 
 app.get('/', (req, res) => {

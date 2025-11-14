@@ -1,3 +1,13 @@
+// Historique global (admin)
+exports.getAllPurchases = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100;
+    const purchases = await Purchase.find().sort({ timestamp: -1 }).limit(limit).populate('user', 'firstName lastName email');
+    res.json(purchases);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
 const Purchase = require('../models/Purchase');
 const StockItem = require('../models/StockItem');
 
