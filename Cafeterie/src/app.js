@@ -1,5 +1,8 @@
+
+const express = require('express');
+const app = express();
+
 const eventRoutes = require('./routes/event');
-app.use('/events', eventRoutes);
 const logError = require('./utils/logError');
 
 require('dotenv').config();
@@ -11,9 +14,7 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
   process.exit(1);
 }
 
-const express = require('express');
 const connectDB = require('./utils/db');
-const app = express();
 
 
 
@@ -28,6 +29,7 @@ const cors = require('./middlewares/cors');
 app.use(compression());
 app.use(cors);
 app.use(express.json());
+app.use('/events', eventRoutes);
 
 // Routes
 const authRoutes = require('./routes/auth');
