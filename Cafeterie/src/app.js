@@ -1,3 +1,5 @@
+const eventRoutes = require('./routes/event');
+app.use('/events', eventRoutes);
 const logError = require('./utils/logError');
 require('dotenv').config();
 
