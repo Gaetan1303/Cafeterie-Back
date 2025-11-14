@@ -6,7 +6,7 @@ const stockHistorySchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   date: { type: Date, default: Date.now },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // qui consomme (ex: acheteur)
-  operator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // qui opère (ex: nettoyeur, préparateur)
+  Auteur: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // qui opère (ex: nettoyeur, préparateur)
   reason: { type: String },
 });
 

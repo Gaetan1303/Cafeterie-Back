@@ -55,7 +55,7 @@ exports.deleteMachine = async (req, res) => {
 exports.useMachine = async (req, res) => {
   try {
     const { id } = req.params;
-    const { quantity, operatorId } = req.body; // nombre de tasses à préparer, opérateur
+    const { quantity, AuteurId } = req.body; // nombre de tasses à préparer, opérateur
     const machine = await Machine.findById(id).populate('consumables.stockRef');
     if (!machine) return res.status(404).json({ error: 'Machine non trouvée' });
     if (machine.state !== 'disponible') return res.status(400).json({ error: 'Machine non disponible' });

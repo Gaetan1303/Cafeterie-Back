@@ -14,9 +14,9 @@ exports.getDashboardStats = async (req, res) => {
       {
         $lookup: {
           from: 'users',
-          localField: 'operator',
+          localField: 'auteur',
           foreignField: '_id',
-          as: 'operatorInfo'
+          as: 'auteurInfo'
         }
       },
       {
@@ -29,7 +29,7 @@ exports.getDashboardStats = async (req, res) => {
       },
       { $unwind: { path: '$itemInfo', preserveNullAndEmptyArrays: true } },
       { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
-      { $unwind: { path: '$operatorInfo', preserveNullAndEmptyArrays: true } },
+  { $unwind: { path: '$auteurInfo', preserveNullAndEmptyArrays: true } },
     ];
 
     const all = await StockHistory.aggregate([
@@ -61,13 +61,13 @@ exports.getDashboardStats = async (req, res) => {
     ]);
 
     // Par opérateur (nettoyage/préparation)
-    const byOperator = await StockHistory.aggregate([
+    const byAuteur = await StockHistory.aggregate([
       ...pipeline,
-      { $match: { operator: { $ne: null } } },
+      { $match: { auteur: { $ne: null } } },
       {
         $group: {
-          _id: { operator: "$operator", action: "$action", type: "$itemInfo.type", category: "$itemInfo.category" },
-          operatorInfo: { $first: "$operatorInfo" },
+          _id: { auteur: "$auteur", action: "$action", type: "$itemInfo.type", category: "$itemInfo.category" },
+          auteurInfo: { $first: "$auteurInfo" },
           totalActions: { $sum: 1 },
           totalQuantite: { $sum: "$quantity" }
         }
@@ -90,7 +90,7 @@ exports.getDashboardStats = async (req, res) => {
     res.json({
       global: all[0] || {},
       byUser,
-      byOperator,
+      byAuteur,
       byCategory
     });
   } catch (err) {
@@ -101,13 +101,13 @@ const StockHistory = require('../models/StockHistory');
 const StockItem = require('../models/StockItem');
 
 // Créer une entrée dans l'historique de stock
-exports.logStockMovement = async ({ itemId, action, quantity, userId, operatorId, reason }) => {
+exports.logStockMovement = async ({ itemId, action, quantity, userId, auteurId, reason }) => {
   await StockHistory.create({
     item: itemId,
     action,
     quantity,
     user: userId,
-    operator: operatorId,
+    auteur: auteurId,
     reason
   });
 };
@@ -119,7 +119,7 @@ exports.getItemHistory = async (req, res) => {
     const history = await StockHistory.find({ item: id })
       .sort({ date: -1 })
       .populate('user', 'firstName lastName email')
-      .populate('operator', 'firstName lastName email');
+      .populate('auteur', 'firstName lastName email');
     res.json(history);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
@@ -133,7 +133,7 @@ exports.getAllHistory = async (req, res) => {
       .sort({ date: -1 })
       .populate('item')
       .populate('user', 'firstName lastName email')
-      .populate('operator', 'firstName lastName email');
+      .populate('auteur', 'firstName lastName email');
     res.json(history);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });

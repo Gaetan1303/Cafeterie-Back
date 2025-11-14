@@ -185,10 +185,41 @@ Cafeterie-Back/
 	quantity: Number,
 	date: Date,
 	user: ObjectId (User),
-	operator: ObjectId (User),
+	Auteur: ObjectId (User),
 	reason: String
 }
 ```
+
+---
+
+## Enums utilisés dans les modèles
+
+### User
+- `role` :
+  - `user`
+  - `admin`
+
+### StockItem
+- `type` :
+  - `cafe`, `the`, `nourriture`, `jus`, `viennoiserie`, `apero`, `petit-dejeuner`, `fruit`
+- `category` :
+  - `Boisson chaude`, `Boisson froide`, `Viennoiserie`, `Apéro`, `Petit déjeuner`, `Fruits et Légumes`
+
+### Event
+- `type` :
+  - `sortie`, `aquapiscine`, `autre`
+
+### Machine
+- `type` :
+  - `cafe`, `the`
+- `unit` :
+  - `tasse`, `litre`, `g`, `sachet`
+- `state` :
+  - `Disponible`, `Remplie`, `Eteinte`, `en nettoyage`, `en panne`
+
+### StockHistory
+- `action` :
+  - `entrée`, `sortie`, `nettoyage`, `préparation`
 
 ---
 
