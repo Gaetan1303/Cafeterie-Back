@@ -1,9 +1,11 @@
 // Middleware CORS pour Express
 const cors = require('cors');
 
-// Autoriser le front-end (exemple : http://localhost:5173)
+// Autoriser le front-end 
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173'
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  'https://cafeterie-ksqrk3gwd-gaetan1303s-projects.vercel.app',
+  'https://cafeterie.vercel.app'
 ];
 
 const corsOptions = {
