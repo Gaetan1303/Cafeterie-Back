@@ -5,7 +5,7 @@ const cors = require('cors');
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
   'https://cafeterie-ksqrk3gwd-gaetan1303s-projects.vercel.app',
-  'https://cafeterie.vercel.app'
+  'https://cafeterie.vercel.app',"*"
 ];
 
 const corsOptions = {
