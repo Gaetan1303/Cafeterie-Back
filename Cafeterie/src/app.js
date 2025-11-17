@@ -1,6 +1,8 @@
 
 const express = require('express');
 const app = express();
+// Pour corriger l'erreur X-Forwarded-For avec express-rate-limit sur Render ou tout proxy
+app.set('trust proxy', 1);
 
 const eventRoutes = require('./routes/event');
 const logError = require('./utils/logError');
