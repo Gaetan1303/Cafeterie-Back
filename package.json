@@ -3,5 +3,6 @@
     "compression": "^1.8.1",
     "redis": "^5.9.0",
     "winston": "^3.18.3"
-  }
+  },
+  "license": "El Mimine !"
 }

@@ -4,9 +4,13 @@ const StockItem = require('../models/StockItem');
 const auth = require('../middlewares/auth');
 const admin = require('../middlewares/admin');
 
-// Créer un consommable
-router.post('/', auth, admin, async (req, res) => {
+// Créer un consommable (autorisé pour user et admin)
+router.post('/', auth, async (req, res) => {
   try {
+    // Seuls les users ou admins peuvent ajouter
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'user')) {
+      return res.status(403).json({ error: 'Accès réservé aux administrateurs ou utilisateurs' });
+    }
     const { type, subtype, category, quantity, threshold } = req.body;
     const item = await StockItem.create({ type, subtype, category, quantity, threshold });
     res.status(201).json(item);
