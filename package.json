@@ -2,7 +2,12 @@
   "dependencies": {
     "compression": "^1.8.1",
     "redis": "^5.9.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.18.3"
+  },
+  "scripts": {
+    "start": "node Cafeterie/src/app.js"
   },
   "license": "El Mimine !"
 }

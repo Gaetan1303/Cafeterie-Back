@@ -1,386 +1,197 @@
 # Cafeterie-Back
 
-Back-end Node.js/Express pour la gestion d'une cafétéria universitaire.
+Back-end Node.js et Express pour la gestion d'une cafeteria universitaire.
 
-## Fonctionnalités principales
+## Objectif
 
-- Authentification JWT (utilisateurs/admins)
-- Gestion des utilisateurs (CRUD, rôles)
-- Gestion du stock (CRUD, alertes seuil, historique mouvements)
-- Gestion des achats et consommations
-- Catégorisation des produits
-- Gestion des machines (CRUD, suivi)
-- Gestion des évènements (CRUD, participations, alertes)
-- Dashboard statistiques (stock, utilisateurs, évènements, participations)
-- Initialisation et nettoyage de la base de données
-- Logs d’erreurs centralisés
+Ce projet expose une API REST pour :
+- Authentifier des utilisateurs avec JWT
+- Gérer le stock et son historique
+- Enregistrer les achats
+- Gérer des machines et des événements
+- Fournir des données de dashboard
 
-## Structure du projet
+## Stack technique
 
-```
-Cafeterie-Back/
-├── Cafeterie/
-│   ├── src/
-│   │   ├── controllers/   # Logique métier (stock, users, events...)
-│   │   ├── models/        # Schémas Mongoose
-│   │   ├── routes/        # Endpoints Express
-│   │   ├── utils/         # Utilitaires (connexion DB, logs...)
-│   │   └── app.js         # Point d’entrée API
-│   ├── .env       # Variables d’environnement
-│   └── package.json
-└── README.md
-```
+- **Node.js** : Environnement d'exécution JavaScript
+- **Express** : Framework web minimaliste
+- **MongoDB avec Mongoose** : Base de données NoSQL et ORM
+- **JWT** : Authentification sécurisée
+- **Swagger** : Documentation API
+
+## Architecture
+
+L'API suit une architecture en couches pour une meilleure organisation et maintenabilité :
+
+- **Controllers** : Gestion des requêtes HTTP et des réponses.
+- **DTOs (Data Transfer Objects)** : Validation et normalisation des données entrantes.
+- **Actions (anciennement UseCases)** : Orchestration des cas métier.
+- **Services** : Contiennent la logique métier.
+- **Repositories** : Accès aux données via Mongoose.
+- **Models** : Définition des schémas de données.
+- **Observers** : Implémentation du pattern Observer pour surveiller les événements métier.
+
+## Principales fonctionnalités
+
+### Authentification
+- Inscription et connexion des utilisateurs avec JWT.
+- Gestion des rôles (utilisateur, administrateur).
+
+### Gestion des stocks
+- Consultation des stocks disponibles.
+- Alertes sur les stocks faibles.
+- Historique des opérations de stock.
+- Réapprovisionnement des consommables.
+
+### Gestion des achats
+- Enregistrement des achats avec décrémentation automatique du stock.
+- Historique des achats par utilisateur.
+- Notifications via le pattern Observer.
+
+### Gestion des machines
+- Suivi des états des machines (utilisation, nettoyage, maintenance).
+- Gestion des opérations administratives sur les machines.
+
+### Gestion des événements
+- Création et gestion des événements.
+- Participation des utilisateurs aux événements.
+- Données analytiques pour les dashboards.
+
+## DTOs
+
+Les DTOs assurent la validation des données entrantes. Voici quelques exemples :
+
+- **UserDTO** :
+  ```json
+  {
+    "email": "string",
+    "password": "string",
+    "role": "string"
+  }
+  ```
+- **PurchaseDTO** :
+  ```json
+  {
+    "userId": "string",
+    "items": [
+      { "type": "string", "subtype": "string", "quantity": "number" }
+    ]
+  }
+  ```
+- **StockDTO** :
+  ```json
+  {
+    "type": "string",
+    "subtype": "string",
+    "quantity": "number"
+  }
+  ```
+
+## Actions (UseCases)
+
+Les actions orchestrent les cas métier. Voici quelques exemples :
+
+- **CreatePurchaseAction** :
+  - Vérifie la disponibilité des stocks.
+  - Crée un achat et met à jour l'historique.
+  - Notifie les observers.
+- **RestockAction** :
+  - Ajoute des quantités au stock existant.
+  - Enregistre l'opération dans l'historique.
+- **ParticipateEventAction** :
+  - Ajoute un utilisateur à un événement.
+  - Met à jour les statistiques de participation.
 
 ## Installation
 
-1. **Cloner le repo**
-	```bash
-	git clone https://github.com/Gaetan1303/Cafeterie-Back.git
-	cd Cafeterie-Back/Cafeterie
-	```
-2. **Installer les dépendances**
-	```bash
-	npm install
-	```
-3. **Configurer l’environnement**
-	- Faites un `.env` et adapter les variables (MongoDB, JWT_SECRET...)
+1. Installer les dépendances :
 
-4. **Lancer le serveur**
-	```bash
-	npm start
-	```
+```bash
+cd Cafeterie
+npm install
+```
 
+2. Configurer les variables d'environnement dans un fichier `.env` :
 
-## Endpoints principaux
+Variables minimales :
+- `PORT=3000`
+- `MONGODB_URI=mongodb://localhost:27017/cafeterie`
+- `JWT_SECRET=chaine_d_au_moins_32_caracteres`
 
-### Authentification ( PUBLIC )
-- `POST /auth/register` : Inscription utilisateur
-- `POST /auth/login` : Connexion utilisateur
+3. Lancer le serveur :
 
-> Tous les endpoints suivant sont sécurisés (JWT, rôle admin pour certaines opérations).
+```bash
+npm start
+```
 
-### Utilisateurs
-- `GET /profile` : Infos du profil connecté
-- `PUT /profile` : Modifier son profil
+Le serveur écoute par défaut sur [http://localhost:3000](http://localhost:3000).
+
+## Documentation API
+
+Swagger est disponible sur :
+- [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+## Routes principales
+
+### Auth
+- POST /auth/register
+- POST /auth/login
+
+### Profile
+- GET /profile/me
+- PUT /profile/me
 
 ### Stock
-- `GET /stock` : Liste paginée du stock
-- `GET /stock/:id` : Détail d’un item
-- `POST /stock` : Créer un item (admin)
-- `PUT /stock/:id` : Modifier un item (admin)
-- `DELETE /stock/:id` : Supprimer un item (admin)
-- `GET /stock/stats` : Statistiques globales
-- `GET /stock/alerts` : Items en alerte
-- `POST /stock/restock` : Réapprovisionnement (admin)
+- GET /stock
+- GET /stock/stats
+- GET /stock/alerts
+- GET /stock/:id
+- POST /stock (admin)
+- PUT /stock/:id (admin)
+- DELETE /stock/:id (admin)
+- POST /stock/restock (admin)
 
-### Achats
-- `GET /purchases/recent` : Derniers achats (pag.)
-- `GET /purchases/me` : Historique de l’utilisateur connecté
-- `GET /purchases/all` : Historique global (admin)
-- `POST /purchases` : Enregistrer un achat
+### Purchases
+- GET /purchases/recent
+- GET /purchases/me
+- GET /purchases/all (admin)
+- POST /purchases
 
-### Évènements
-- `GET /events` : Liste paginée des évènements
-- `GET /events/:id` : Détail d’un évènement
-- `POST /events` : Créer un évènement (admin)
-- `PUT /events/:id` : Modifier (admin)
-- `DELETE /events/:id` : Supprimer (admin)
-- `POST /events/:id/participate` : Participer
-- `POST /events/:id/unparticipate` : Se désinscrire
-- `GET /events/dashboard` : Statistiques évènements
-- `GET /events/alert/critical` : Alertes seuil critique
+### Events
+- GET /events
+- GET /events/:id
+- POST /events (admin)
+- PUT /events/:id (admin)
+- DELETE /events/:id (admin)
+- POST /events/:id/participate
+- POST /events/:id/unparticipate
+- GET /events/dashboard
+- GET /events/alert/critical
 
 ### Machines
-- `GET /machines` : Liste des machines
-- `GET /machines/:id` : Détail d’une machine
-- `POST /machines` : Créer (admin)
-- `PUT /machines/:id` : Modifier (admin)
-- `DELETE /machines/:id` : Supprimer (admin)
-- `POST /machines/:id/use` : Utiliser/préparer
-- `POST /machines/:id/clean` : Nettoyer
-- `POST /machines/:id/state` : Changer état (admin)
+- GET /machines
+- GET /machines/:id
+- POST /machines (admin)
+- PUT /machines/:id (admin)
+- DELETE /machines/:id (admin)
+- POST /machines/:id/use
+- POST /machines/:id/clean
+- POST /machines/:id/state (admin)
 
-### Historique de stock
-- `GET /stock-history/:id` : Historique d’un item
-- `GET /stock-history` : Historique global (admin)
-- `GET /stock-history/dashboard` : Dashboard croisé (admin)
-- `POST /stock-history/operation` : Log opération (nettoyage/préparation)
+### Stock history
+- GET /stock-history (admin)
+- GET /stock-history/dashboard (admin)
+- GET /stock-history/:id
+- POST /stock-history/operation
 
+### Barcode
+- POST /barcode/scan
+- GET /barcode/scanned
 
----
+### Consommables
+- POST /consommables
+- GET /consommables
+- GET /consommables/:id
+- PUT /consommables/:id (admin)
+- DELETE /consommables/:id (admin)
 
-## Modèles principaux (Mongoose)
-
-### User
-```js
-{
-	firstName: String,
-	lastName: String,
-	email: String (unique),
-	password: String (hashé),
-	role: 'user' | 'admin',
-	createdAt: Date
-}
-```
-
-### StockItem
-```js
-{
-	type: String (enum),
-	subtype: String,
-	category: String (enum),
-	quantity: Number,
-	threshold: Number,
-	lastRestocked: Date
-}
-```
-
-### Purchase
-```js
-{
-	user: ObjectId (User),
-	stockItem: ObjectId (StockItem),
-	quantity: Number,
-	timestamp: Date
-}
-```
-
-### Event
-```js
-{
-	title: String,
-	description: String,
-	date: Date,
-	type: String (enum),
-	participants: [ObjectId (User)],
-	maxParticipants: Number,
-	alertThreshold: Number,
-	createdAt: Date
-}
-```
-
-### Machine
-```js
-{
-	name: String,
-	type: String (enum),
-	capacity: Number,
-	unit: String (enum),
-	state: String (enum),
-	lastUsed: Date,
-	lastCleaned: Date,
-	consumables: [{
-		name: String,
-		stockRef: ObjectId (StockItem),
-		quantity: Number,
-		unit: String
-	}]
-}
-```
-
-### StockHistory
-```js
-{
-	item: ObjectId (StockItem),
-	action: 'entrée' | 'sortie' | 'nettoyage' | 'préparation',
-	quantity: Number,
-	date: Date,
-	user: ObjectId (User),
-	Auteur: ObjectId (User),
-	reason: String
-}
-```
-
----
-
-## DTO
-
-
-### User
-```json
-{
-	"firstName": "string",
-	"lastName": "string",
-	"email": "string",
-	"role": "user | admin",
-	"createdAt": "date"
-}
-```
-
-### StockItem
-```json
-{
-	"type": "string",
-	"subtype": "string",
-	"category": "string",
-	"quantity": "number",
-	"threshold": "number",
-	"lastRestocked": "date"
-}
-```
-
-### Purchase
-```json
-{
-	"user": "ObjectId",
-	"stockItem": "ObjectId",
-	"quantity": "number",
-	"timestamp": "date"
-}
-```
-
-### Event
-```json
-{
-	"title": "string",
-	"description": "string",
-	"date": "date",
-	"type": "string",
-	"participants": ["ObjectId"],
-	"maxParticipants": "number",
-	"alertThreshold": "number",
-	"createdAt": "date"
-}
-```
-
-### Machine
-```json
-{
-	"name": "string",
-	"type": "string",
-	"capacity": "number",
-	"unit": "string",
-	"state": "string",
-	"lastUsed": "date",
-	"lastCleaned": "date",
-	"consumables": [
-		{
-			"name": "string",
-			"stockRef": "ObjectId",
-			"quantity": "number",
-			"unit": "string"
-		}
-	]
-}
-```
-
-### StockHistory
-```json
-{
-	"item": "ObjectId",
-	"action": "entrée | sortie | nettoyage | préparation",
-	"quantity": "number",
-	"date": "date",
-	"user": "ObjectId",
-	"Auteur": "ObjectId",
-	"reason": "string"
-}
-```
-
-## Enums utilisés dans les modèles
-
-### User
-- `role` :
-  - `user`
-  - `admin`
-
-### StockItem
-- `type` :
-  - `cafe`, `the`, `nourriture`, `jus`, `viennoiserie`, `apero`, `petit-dejeuner`, `fruit`
-- `category` :
-  - `Boisson chaude`, `Boisson froide`, `Viennoiserie`, `Apéro`, `Petit déjeuner`, `Fruits et Légumes`
-
-### Event
-- `type` :
-  - `sortie`, `aquapiscine`, `autre`
-
-### Machine
-- `type` :
-  - `cafe`, `the`
-- `unit` :
-  - `tasse`, `litre`, `g`, `sachet`
-- `state` :
-  - `Disponible`, `Remplie`, `Eteinte`, `en nettoyage`, `en panne`
-
-### StockHistory
-- `action` :
-  - `entrée`, `sortie`, `nettoyage`, `préparation`
-
----
-
-## Exemples d’utilisation API
-
-### Authentification (inscription)
-```http
-POST /auth/register
-{
-	"firstName": "Alice",
-	"lastName": "Martin",
-	"email": "alice@univ.fr",
-	"password": "MotDePasseS3cur!"
-}
-```
-
-### Enregistrer un achat
-```http
-POST /purchases
-Authorization: Bearer <token>
-{
-	"stockItem": "<id de l’item>",
-	"quantity": 2
-}
-```
-
-### Créer un évènement (admin)
-```http
-POST /events
-Authorization: Bearer <token admin>
-{
-	"title": "Sortie Bowling",
-	"date": "2025-12-01T19:00:00Z",
-	"type": "sortie",
-	"maxParticipants": 12
-}
-```
-
----
-
-## Lancer les tests
-
-Des tests unitaires et d’intégration sont recommandés (ex : Jest, Supertest).
-
----
-
-## Sécurité & production
-
-- JWT_SECRET fort et confidentiel
-- Limitation de débit (rate limiting)
-- Validation stricte des entrées (express-validator)
-- Pool de connexions MongoDB optimisé
-- Logs centralisés (Winston)
-- CORS configuré
-
----
-
-## Contact & contribution
-
-Pour toute question ou contribution, ouvrez une issue ou une pull request sur GitHub.
-
-## Scripts utiles
-
-- `npm run clean` : Nettoyer la base de données
-- `npm run init` : Initialiser la base avec des données de test
-
-## Contribution
-
-1. Forker le repo
-2. Créer une branche (`feature/ma-fonctionnalite`)
-3. Commit & push vos modifications
-4. Ouvrir une Pull Request
-
-## Auteurs
-- Gaetan1303
-- Billy
-
-## Licence
-Mimine For ever

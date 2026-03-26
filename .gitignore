@@ -43,3 +43,6 @@ Cafeterie-Back/.env
 Cafeterie-Back/.env.*
 Cafeterie-Back/logs/
 Cafeterie-Back/coverage/
+
+node_modules/
+.env

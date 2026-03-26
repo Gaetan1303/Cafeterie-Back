@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 
 const stockItemSchema = new mongoose.Schema({
+  code: { type: String, index: true, sparse: true },
+  name: { type: String },
+  brand: { type: String },
+  image: { type: String },
+  scannedAt: { type: Date },
+  source: { type: String, default: 'manual' },
   type: { type: String, enum: [
     'cafe',
     'the',
@@ -15,14 +21,6 @@ const stockItemSchema = new mongoose.Schema({
   subtype: { type: String, index: true },
   category: {
     type: String,
-    enum: [
-      'Boisson chaude',
-      'Boisson froide',
-      'Viennoiserie',
-      'Apéro',
-      'Petit déjeuner',
-      'Fruits et Légumes'
-    ],
     required: true,
     index: true
   },
@@ -32,5 +30,7 @@ const stockItemSchema = new mongoose.Schema({
 });
 // Unicité sur type+subtype
 stockItemSchema.index({ type: 1, subtype: 1 }, { unique: true });
+// Unicité optionnelle sur code-barres pour les produits scannés
+stockItemSchema.index({ code: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('StockItem', stockItemSchema);

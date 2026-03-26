@@ -1,156 +1,143 @@
-// Statistiques globales sur le stock
+const StockRepository = require('../repositories/StockRepository');
+const StockService = require('../services/StockService');
+const {
+  GetStockQueryDTO,
+  CreateStockItemDTO,
+  RestockDTO
+} = require('../dtos/StockDTOs');
+const {
+  GetStockStatsAction,
+  GetStockAlertsAction,
+  GetStockAction,
+  CreateStockItemAction,
+  GetStockItemAction,
+  RestockAction
+} = require('../actions/StockActions');
+const StockHistory = require('../models/StockHistory');
+
+function buildDeps() {
+  const repository = new StockRepository();
+  const service = new StockService(repository);
+  const stockHistoryService = {
+    async logMovement({ itemId, action, quantity, userId, reason }) {
+      await StockHistory.create({
+        item: itemId,
+        action,
+        quantity,
+        user: userId,
+        reason
+      });
+    }
+  };
+  return { service, repository, stockHistoryService };
+}
+
 exports.getStockStats = async (req, res) => {
   try {
-    const stock = await StockItem.find();
-    let totalItems = stock.length;
-    let totalQuantity = stock.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    let totalCups = stock.reduce((sum, item) => sum + (estimateCups(item) || 0), 0);
-    let alerts = stock.filter(item => item.threshold != null && item.quantity <= item.threshold).length;
-    res.json({ totalItems, totalQuantity, totalCups, alerts });
+    const { service } = buildDeps();
+    const useCase = new GetStockStatsUseCase(service);
+    const result = await useCase.execute();
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
-// Items en alerte de stock bas
+
 exports.getStockAlerts = async (req, res) => {
   try {
-    const stock = await StockItem.find();
-    const alerts = stock.filter(item => item.threshold != null && item.quantity <= item.threshold)
-      .map(item => {
-        const cups = estimateCups(item);
-        return {
-          ...item.toObject(),
-          cupsEstimate: cups,
-          alertLowStock: true
-        };
-      });
-    res.json(alerts);
+    const { service } = buildDeps();
+    const useCase = new GetStockAlertsUseCase(service);
+    const result = await useCase.execute();
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
-// Créer un nouvel item de stock
+
 exports.createStockItem = async (req, res) => {
   try {
-    const { type, subtype, quantity, threshold } = req.body;
-    if (!type || quantity == null) {
-      return res.status(400).json({ error: 'Champs requis manquants' });
-    }
-    const exists = await StockItem.findOne({ type, subtype });
-    if (exists) {
-      return res.status(409).json({ error: 'Cet item existe déjà' });
-    }
-    const item = await StockItem.create({ type, subtype, quantity, threshold });
-    res.status(201).json(item);
+    const dto = new CreateStockItemDTO(req.body);
+    const { service } = buildDeps();
+    const useCase = new CreateStockItemUseCase(service);
+    const result = await useCase.execute(dto);
+    res.status(201).json(result);
   } catch (err) {
+    if (err.message.includes('Validation failed')) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err.message.includes('existe déjà')) {
+      return res.status(409).json({ error: err.message });
+    }
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 
-// Lire un item de stock par ID
 exports.getStockItem = async (req, res) => {
   try {
-    const item = await StockItem.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: 'Item non trouvé' });
-    res.json(item);
+    const { service } = buildDeps();
+    const useCase = new GetStockItemUseCase(service);
+    const result = await useCase.execute(req.params.id);
+    res.json(result);
   } catch (err) {
+    if (err.message.includes('Item non trouvé')) {
+      return res.status(404).json({ error: err.message });
+    }
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 
-// Mettre à jour un item de stock
 exports.updateStockItem = async (req, res) => {
   try {
-    const { quantity, threshold } = req.body;
-    const item = await StockItem.findByIdAndUpdate(
-      req.params.id,
-      { $set: { quantity, threshold } },
-      { new: true, runValidators: true }
-    );
-    if (!item) return res.status(404).json({ error: 'Item non trouvé' });
-    res.json(item);
+    const { service } = buildDeps();
+    const result = await service.updateItem(req.params.id, {
+      quantity: req.body.quantity,
+      threshold: req.body.threshold
+    });
+    res.json(result);
   } catch (err) {
+    if (err.message.includes('Item non trouvé')) {
+      return res.status(404).json({ error: err.message });
+    }
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 
-// Supprimer un item de stock
 exports.deleteStockItem = async (req, res) => {
   try {
-    const item = await StockItem.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ error: 'Item non trouvé' });
+    const { service } = buildDeps();
+    await service.deleteItem(req.params.id);
     res.json({ message: 'Item supprimé' });
   } catch (err) {
+    if (err.message.includes('Item non trouvé')) {
+      return res.status(404).json({ error: err.message });
+    }
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
-const StockItem = require('../models/StockItem');
-
-// Obtenir le stock actuel
-
-// Estimation tasses par paquet (exemple : 1 café = 20 tasses, 1 thé = 40 tasses)
-function estimateCups(item) {
-  if (item.type === 'cafe') return item.quantity * 20;
-  if (item.type === 'the') return item.quantity * 40;
-  return null;
-}
 
 exports.getStock = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
-    const skip = (page - 1) * limit;
-    const stock = await StockItem.find()
-      .skip(skip)
-      .limit(limit)
-      .select('type subtype category quantity threshold lastRestocked');
-    const total = await StockItem.countDocuments();
-    const stockWithEstimation = stock.map(item => {
-      const cups = estimateCups(item);
-      const alert = item.threshold != null && item.quantity <= item.threshold;
-      return {
-        ...item.toObject(),
-        cupsEstimate: cups,
-        alertLowStock: alert
-      };
-    });
-    res.json({
-      data: stockWithEstimation,
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit)
-    });
+    const queryDTO = new GetStockQueryDTO(req.query.page, req.query.limit);
+    const { service } = buildDeps();
+    const useCase = new GetStockUseCase(service);
+    const result = await useCase.execute(queryDTO);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 
-// Réapprovisionnement (admin)
 exports.restock = async (req, res) => {
   try {
-    const { type, subtype, quantity } = req.body;
-    if (!type || !quantity) {
-      return res.status(400).json({ error: 'Champs requis manquants' });
-    }
-    let item = await StockItem.findOne({ type, subtype });
-    if (!item) {
-      item = await StockItem.create({ type, subtype, quantity, lastRestocked: new Date() });
-    } else {
-      item.quantity += quantity;
-      item.lastRestocked = new Date();
-      await item.save();
-    }
-    // Log mouvement de stock (entrée)
-    await StockHistory.create({
-      item: item._id,
-      action: 'entrée',
-      quantity,
-      user: req.user.id,
-      reason: 'Réapprovisionnement'
-    });
-    res.status(200).json({ message: 'Stock réapprovisionné', item });
+    const restockDTO = new RestockDTO(req.body);
+    const { service, stockHistoryService } = buildDeps();
+    const useCase = new RestockUseCase(service, stockHistoryService);
+    const result = await useCase.execute(restockDTO, req.user.id);
+    res.status(200).json({ message: 'Stock réapprovisionné', item: result });
   } catch (err) {
+    if (err.message.includes('Validation failed')) {
+      return res.status(400).json({ error: err.message });
+    }
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };

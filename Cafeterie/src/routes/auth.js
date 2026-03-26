@@ -6,8 +6,49 @@ const authController = require('../controllers/authController');
 const { body, validate } = require('../middlewares/validate');
 const authLimiter = require('../middlewares/authLimiter');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentification et inscription des utilisateurs
+ */
 
-// Validation pour l'inscription
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Créer un nouveau compte utilisateur
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password, firstName, lastName]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: jean.dupont@exemple.fr
+ *               password:
+ *                 type: string
+ *                 example: MonMdp1!
+ *                 description: Min 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
+ *               firstName:
+ *                 type: string
+ *                 example: Jean
+ *               lastName:
+ *                 type: string
+ *                 example: Dupont
+ *     responses:
+ *       201:
+ *         description: Compte créé avec succès
+ *       400:
+ *         description: Données invalides
+ *       429:
+ *         description: Trop de tentatives, réessayer plus tard
+ */
 
 // Rate limiting + validation pour l'inscription
 router.post(
@@ -26,6 +67,43 @@ router.post(
 	]),
 	authController.register
 );
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Se connecter et obtenir un token JWT
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: jean.dupont@exemple.fr
+ *               password:
+ *                 type: string
+ *                 example: MonMdp1!
+ *     responses:
+ *       200:
+ *         description: Connexion réussie, retourne un token JWT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *       401:
+ *         description: Identifiants incorrects
+ *       429:
+ *         description: Trop de tentatives, réessayer plus tard
+ */
 
 // Validation pour la connexion
 

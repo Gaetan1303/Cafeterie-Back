@@ -1,4 +1,11 @@
-// Dashboard croisé : stats par consommateur, opérateur, catégorie, type, etc.
+/**
+ * Retourne les statistiques croisées du tableau de bord de l'historique de stock.
+ * Agrège par consommateur, opérateur, catégorie et type via plusieurs pipelines MongoDB.
+ *
+ * @param {import('express').Request} req - Requête Express
+ * @param {import('express').Response} res - Réponse avec { global, byUser, byAuteur, byCategory }
+ * @returns {void} 200 avec les statistiques agrégées (admin uniquement)
+ */
 exports.getDashboardStats = async (req, res) => {
   try {
     // Statistiques globales
@@ -100,7 +107,19 @@ exports.getDashboardStats = async (req, res) => {
 const StockHistory = require('../models/StockHistory');
 const StockItem = require('../models/StockItem');
 
-// Créer une entrée dans l'historique de stock
+/**
+ * Crée une entrée dans l'historique de stock.
+ * Fonction utilitaire appelée par d'autres contrôleurs (restock, createPurchase, etc.).
+ *
+ * @param {object} params - Paramètres du mouvement
+ * @param {string} params.itemId - ID de l'item de stock
+ * @param {string} params.action - Type d'action ('entrée' | 'sortie' | 'nettoyage' | 'préparation')
+ * @param {number} params.quantity - Quantité impliquée
+ * @param {string} [params.userId] - ID de l'utilisateur consommateur
+ * @param {string} [params.auteurId] - ID de l'opérateur (admin/machine)
+ * @param {string} [params.reason] - Motif de l'opération
+ * @returns {Promise<void>}
+ */
 exports.logStockMovement = async ({ itemId, action, quantity, userId, auteurId, reason }) => {
   await StockHistory.create({
     item: itemId,
@@ -112,7 +131,13 @@ exports.logStockMovement = async ({ itemId, action, quantity, userId, auteurId, 
   });
 };
 
-// Récupérer l'historique d'un item
+/**
+ * Retourne l'historique complet d'un item de stock trié par date décroissante.
+ *
+ * @param {import('express').Request} req - Requête avec req.params.id (ID de l'item)
+ * @param {import('express').Response} res - Réponse avec la liste des mouvements peuplés
+ * @returns {void} 200 avec l'historique de l'item
+ */
 exports.getItemHistory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,7 +151,13 @@ exports.getItemHistory = async (req, res) => {
   }
 };
 
-// Récupérer l'historique global
+/**
+ * Retourne l'historique global de tous les mouvements de stock, trié par date décroissante.
+ *
+ * @param {import('express').Request} req - Requête Express
+ * @param {import('express').Response} res - Réponse avec tous les mouvements peuplés (item, user, auteur)
+ * @returns {void} 200 avec l'historique complet
+ */
 exports.getAllHistory = async (req, res) => {
   try {
     const history = await StockHistory.find()

@@ -1,0 +1,107 @@
+{
+  "consumableTypes": {
+    "cafe": {
+      "label": "Café",
+      "cupsRatio": 20,
+      "description": "Grains ou poudre de café"
+    },
+    "the": {
+      "label": "Thé",
+      "cupsRatio": 40,
+      "description": "Feuilles ou sachets de thé"
+    },
+    "jus": {
+      "label": "Jus",
+      "cupsRatio": 1,
+      "description": "Boissons non chaudes"
+    },
+    "viennoiserie": {
+      "label": "Viennoiserie",
+      "cupsRatio": null,
+      "description": "Pains, croissants, brioches"
+    },
+    "apero": {
+      "label": "Apéro",
+      "cupsRatio": null,
+      "description": "Snacks salés"
+    },
+    "petit-dejeuner": {
+      "label": "Petit Déjeuner",
+      "cupsRatio": null,
+      "description": "Produits petit-déjeuner"
+    },
+    "fruit": {
+      "label": "Fruit",
+      "cupsRatio": null,
+      "description": "Fruits et légumes"
+    },
+    "nourriture": {
+      "label": "Nourriture",
+      "cupsRatio": null,
+      "description": "Autres aliments"
+    }
+  },
+  "machineStates": {
+    "disponible": {
+      "label": "Disponible",
+      "color": "green",
+      "canUse": true
+    },
+    "remplie": {
+      "label": "Remplie",
+      "color": "blue",
+      "canUse": false
+    },
+    "eteinte": {
+      "label": "Éteinte",
+      "color": "gray",
+      "canUse": false
+    },
+    "en nettoyage": {
+      "label": "En Nettoyage",
+      "color": "yellow",
+      "canUse": false
+    },
+    "en panne": {
+      "label": "En Panne",
+      "color": "red",
+      "canUse": false
+    }
+  },
+  "eventTypes": {
+    "sortie": {
+      "label": "Sortie",
+      "description": "Sortie extérieure"
+    },
+    "aquapiscine": {
+      "label": "Piscine",
+      "description": "Activité aquatique"
+    },
+    "autre": {
+      "label": "Autre",
+      "description": "Autre type d'événement"
+    }
+  },
+  "stockHistoryActions": {
+    "entree": {
+      "label": "Entrée",
+      "sign": "+",
+      "color": "green"
+    },
+    "sortie": {
+      "label": "Sortie",
+      "sign": "-",
+      "color": "red"
+    },
+    "nettoyage": {
+      "label": "Nettoyage",
+      "sign": "~",
+      "color": "yellow"
+    },
+    "preparation": {
+      "label": "Préparation",
+      "sign": "~",
+      "color": "blue"
+    }
+  }
+}
