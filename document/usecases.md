@@ -67,5 +67,3 @@
   2. Si la reconnaissance échoue, l'utilisateur peut réessayer avec une autre image.
 
 ---
-
-N’hésite pas à préciser si tu veux des cas d’usage plus détaillés ou des extensions/alternatives pour chaque scénario.
